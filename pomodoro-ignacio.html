@@ -1,1043 +1,241 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pomodoro Cofrade — Ignacio</title>
-  <meta name="theme-color" content="#000000" />
-  <style>
-    :root{
-      --bg:#000;
-      --card:#0b0b0b;
-      --card2:#0f0f0f;
-      --border:#222;
-      --text:#fff;
-      --muted:rgba(255,255,255,.75);
-      --accent:#b08d57; /* dorado cofrade */
-      --accent2:#5a1a2c; /* burdeos */
-      --good:#1f8f4a;
-      --warn:#b86b1d;
-      --shadow: 0 18px 50px rgba(0,0,0,.55);
-      --radius:22px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      background: radial-gradient(1200px 700px at 20% 10%, rgba(176,141,87,.18), transparent 55%),
-                  radial-gradient(900px 500px at 80% 20%, rgba(90,26,44,.18), transparent 55%),
-                  radial-gradient(900px 700px at 60% 90%, rgba(255,255,255,.04), transparent 55%),
-                  var(--bg);
-      color:var(--text);
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-      -webkit-font-smoothing:antialiased;
-      padding:22px;
-    }
-    .wrap{max-width:980px;margin:0 auto;}
-    header{
-      display:flex;gap:14px;align-items:flex-start;justify-content:space-between;
-      margin-bottom:14px;
-    }
-    .title{
-      line-height:1.1;
-    }
-    h1{
-      margin:0;
-      font-size:28px;
-      letter-spacing:.2px;
-    }
-    .sub{
-      margin-top:6px;
-      color:var(--muted);
-      font-size:14px;
-    }
-    .ramos{
-      display:flex;flex-direction:column;gap:6px;
-      background:linear-gradient(180deg, rgba(176,141,87,.14), rgba(90,26,44,.12));
-      border:1px solid rgba(176,141,87,.28);
-      padding:12px 14px;
-      border-radius:16px;
-      box-shadow: var(--shadow);
-      min-width:240px;
-    }
-    .ramos strong{font-size:14px}
-    .ramos .n{font-size:22px;font-weight:800}
-    .grid{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:14px;
-    }
-    @media (max-width: 900px){
-      .grid{grid-template-columns: 1fr; }
-      .ramos{min-width:unset}
-    }
-    .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--shadow);
-    }
-    .card h2{
-      margin:0 0 10px 0;
-      font-size:16px;
-      letter-spacing:.2px;
-      color: rgba(255,255,255,.92);
-      display:flex;align-items:center;justify-content:space-between;
-      gap:10px;
-    }
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid rgba(176,141,87,.28);
-      background: rgba(176,141,87,.08);
-      color: rgba(255,255,255,.92);
-      font-size:13px;
-      user-select:none;
-      white-space:nowrap;
-    }
-    .timer{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:10px;
-      padding: 12px 10px 6px;
-    }
-    .time{
-      font-size:86px;
-      font-weight:900;
-      letter-spacing:1px;
-      font-variant-numeric: tabular-nums;
-      text-shadow: 0 10px 40px rgba(0,0,0,.6);
-    }
-    .modeLine{
-      display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
-      color:var(--muted);
-      font-size:14px;
-    }
-    .modeTag{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 12px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.05);
-      color:rgba(255,255,255,.92);
-      font-weight:700;
-    }
-    .modeTag.focus{border-color:rgba(176,141,87,.35); background:rgba(176,141,87,.10)}
-    .modeTag.break{border-color:rgba(90,26,44,.35); background:rgba(90,26,44,.14)}
-    .btnRow{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0 0}
-    button{
-      appearance:none;border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      color:rgba(255,255,255,.92);
-      padding:12px 14px;
-      border-radius:14px;
-      font-weight:800;
-      cursor:pointer;
-      transition: transform .05s ease, background .15s ease, border-color .15s ease;
-      min-width:130px;
-    }
-    button:hover{background:rgba(255,255,255,.10); border-color:rgba(255,255,255,.22)}
-    button:active{transform: scale(.98)}
-    button.primary{background: linear-gradient(180deg, rgba(176,141,87,.26), rgba(176,141,87,.10)); border-color:rgba(176,141,87,.42)}
-    button.good{background: linear-gradient(180deg, rgba(31,143,74,.30), rgba(31,143,74,.12)); border-color:rgba(31,143,74,.45)}
-    button.warn{background: linear-gradient(180deg, rgba(184,107,29,.30), rgba(184,107,29,.12)); border-color:rgba(184,107,29,.45)}
-    button.danger{background: linear-gradient(180deg, rgba(255,80,80,.18), rgba(255,80,80,.08)); border-color:rgba(255,80,80,.32)}
-    button.small{min-width:auto;padding:10px 12px;border-radius:12px;font-weight:800}
-    .controls{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-      margin-top:14px;
-    }
-    @media (max-width: 540px){
-      .controls{grid-template-columns: 1fr;}
-    }
-    label{display:block;font-size:13px;color:var(--muted);margin:0 0 6px}
-    input, select, textarea{
-      width:100%;
-      border-radius:14px;
-      padding:12px 12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(0,0,0,.55);
-      color:rgba(255,255,255,.92);
-      outline:none;
-      font-size:15px;
-    }
-    input:focus, select:focus, textarea:focus{border-color: rgba(176,141,87,.55)}
-    .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    @media (max-width: 540px){ .row2{grid-template-columns:1fr;} }
-    .mini{
-      margin-top:12px;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-    }
-    @media (max-width: 900px){ .mini{grid-template-columns:1fr 1fr;} }
-    @media (max-width: 540px){ .mini{grid-template-columns:1fr;} }
-    .stat{
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:18px;
-      padding:12px;
-      display:flex;flex-direction:column;gap:6px;
-    }
-    .stat .k{color:var(--muted);font-size:12px}
-    .stat .v{font-size:20px;font-weight:900}
-    .divider{height:1px;background:rgba(255,255,255,.10);margin:12px 0}
-    .hint{color:var(--muted);font-size:13px;line-height:1.35}
-    .twoCol{
-      display:grid;grid-template-columns:1fr 1fr;gap:12px;
-    }
-    @media (max-width: 900px){ .twoCol{grid-template-columns:1fr;} }
-    .scheduleHead{
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-    }
-    .daysTabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-    .tab{
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.04);
-      color:rgba(255,255,255,.86);
-      padding:8px 10px;border-radius:999px;
-      cursor:pointer;font-weight:800;font-size:13px;
-      user-select:none;
-    }
-    .tab.active{border-color:rgba(176,141,87,.45); background:rgba(176,141,87,.12)}
-    .taskList{
-      margin-top:10px;
-      display:grid;gap:10px;
-    }
-    .taskItem{
-      display:flex;gap:10px;align-items:center;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:16px;
-      padding:10px;
-    }
-    .taskItem input{
-      background:rgba(0,0,0,.35);
-      border-radius:12px;
-      padding:10px 10px;
-    }
-    .taskItem .n{width:34px;height:34px;border-radius:12px;
-      display:flex;align-items:center;justify-content:center;
-      background:rgba(176,141,87,.12);
-      border:1px solid rgba(176,141,87,.25);
-      font-weight:900;
-    }
-    .rewardGrid{
-      display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;
-    }
-    @media (max-width: 540px){ .rewardGrid{grid-template-columns:1fr;} }
-    .holy{
-      border-radius:18px;
-      border:1px solid rgba(176,141,87,.26);
-      background:
-        radial-gradient(800px 400px at 20% 10%, rgba(176,141,87,.22), transparent 60%),
-        radial-gradient(700px 380px at 80% 20%, rgba(90,26,44,.22), transparent 60%),
-        rgba(255,255,255,.03);
-      padding:14px;
-      position:relative;
-      overflow:hidden;
-      min-height:120px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      gap:8px;
-    }
-    .holy .top{
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-    }
-    .holy .badge{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:8px 10px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(0,0,0,.35);
-      font-weight:900;
-      font-size:12px;
-      color:rgba(255,255,255,.92);
-    }
-    .holy .name{
-      font-size:16px;font-weight:900;letter-spacing:.2px;
-    }
-    .holy .miniText{color:var(--muted);font-size:12px;line-height:1.35}
-    .holy.locked{
-      filter:grayscale(.8);
-      opacity:.55;
-      border-color:rgba(255,255,255,.12);
-    }
-    .holy.locked .name{color:rgba(255,255,255,.82)}
-    .holy::after{
-      content:"";
-      position:absolute;inset:-80px -80px auto auto;
-      width:220px;height:220px;border-radius:50%;
-      background:rgba(176,141,87,.12);
-      filter: blur(1px);
-      transform: rotate(12deg);
-    }
-    .toast{
-      position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
-      background:rgba(0,0,0,.78);
-      border:1px solid rgba(176,141,87,.28);
-      color:#fff;
-      padding:12px 14px;border-radius:14px;
-      box-shadow: var(--shadow);
-      max-width:min(720px, calc(100% - 30px));
-      display:none;
-      gap:10px;
-      align-items:flex-start;
-      z-index:9999;
-    }
-    .toast.show{display:flex}
-    .toast .t{font-weight:900}
-    .toast .m{color:rgba(255,255,255,.85);font-size:13px;line-height:1.25}
-    .toast .x{
-      margin-left:auto;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.08);
-      padding:8px 10px;border-radius:12px;
-      cursor:pointer;font-weight:900;
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Pomodoro Ignacio</title>
+
+<style>
+body{
+  margin:0;
+  background:#0b0b0b;
+  color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;
+}
+.wrap{max-width:900px;margin:auto;padding:24px}
+.card{background:#121212;border:1px solid #2a2a2a;border-radius:18px;padding:20px;margin-bottom:18px}
+.time{font-size:80px;text-align:center;margin:10px 0}
+button{background:#1a1a1a;color:#fff;border:1px solid #444;padding:12px;border-radius:12px;margin:6px;cursor:pointer}
+input{background:#0f0f0f;border:1px solid #333;color:#fff;padding:10px;border-radius:8px;width:100%}
+.tag{padding:6px 12px;border-radius:999px;font-size:12px;display:inline-block;margin-bottom:8px}
+.tagFocus{background:#331111;border:1px solid #883333}
+.tagBreak{background:#113322;border:1px solid #338855}
+.holycard{
+  background:#fff;
+  color:#000;
+  border-radius:12px;
+  padding:12px;
+  margin:8px 0;
+  box-shadow:0 6px 20px rgba(0,0,0,0.4);
+}
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#111;
+  padding:14px 20px;
+  border-radius:12px;
+  border:1px solid #444;
+  display:none;
+}
+.toast.show{display:block}
+</style>
 </head>
+
 <body>
+
 <div class="wrap">
 
-  <header>
-    <div class="title">
-      <h1>Pomodoro Cofrade — Ignacio</h1>
-      <div class="sub">4º ESO · foco real · descanso opcional · recompensas sorpresa</div>
-    </div>
-    <div class="ramos" id="ramosBox" title="Cuenta atrás hasta Domingo de Ramos 2026">
-      <strong>⛪ Domingo de Ramos (2026)</strong>
-      <div class="n"><span id="diasRamos">—</span> días</div>
-      <div class="sub" style="margin:0;color:var(--muted);font-size:12px">Fecha: 29 marzo 2026</div>
-    </div>
-  </header>
+<div class="card">
+<div id="modeTag" class="tag tagFocus">FOCO</div>
+<div class="time" id="time">30:00</div>
 
-  <div class="grid">
-    <!-- TIMER -->
-    <div class="card">
-      <h2>
-        <span>⏳ Temporizador</span>
-        <span class="pill" id="pillHermandad">Hermandad: —</span>
-      </h2>
+<div style="text-align:center">
+<button id="btnStart">Empezar</button>
+<button id="btnPause">Pausar</button>
+<button id="btnReset">Reiniciar</button>
+<button id="btnSpotify">Spotify</button>
+</div>
 
-      <div class="timer">
-        <div class="modeLine">
-          <span class="modeTag focus" id="modeTag">FOCO</span>
-          <span class="modeTag" id="blockTag">Bloque: —</span>
-          <span class="modeTag" id="subjectTag">Asignatura: —</span>
-        </div>
+<br>
 
-        <div class="time" id="time">30:00</div>
+Foco (min):
+<input id="focusMin" type="number" value="30">
 
-        <div class="btnRow" id="mainButtons">
-          <button class="primary" id="startBtn">Empezar</button>
-          <button id="pauseBtn">Pausar</button>
-          <button class="danger" id="resetBtn">Reiniciar</button>
-          <button class="small" id="spotifyBtn">Spotify</button>
-        </div>
+Descanso (min):
+<input id="breakMin" type="number" value="5">
 
-        <div class="btnRow" id="choiceButtons" style="display:none;">
-          <button class="good" id="goBreakBtn">Descansar ahora</button>
-          <button class="warn" id="skipBreakBtn">Seguir (saltar descanso)</button>
-        </div>
-      </div>
-
-      <div class="controls">
-        <div>
-          <label>Foco (min)</label>
-          <input id="focusMin" type="number" min="5" max="180" step="1" />
-        </div>
-        <div>
-          <label>Descanso (min)</label>
-          <input id="breakMin" type="number" min="1" max="60" step="1" />
-        </div>
-        <div style="grid-column:1/-1">
-          <label>Enlace Spotify (playlist o álbum)</label>
-          <input id="spotifyUrl" placeholder="pega aquí el enlace de Spotify y quedará guardado" />
-          <div class="hint" style="margin-top:6px">
-            Consejo: copia el enlace desde Spotify → “Compartir” → “Copiar enlace”.
-          </div>
-        </div>
-      </div>
-
-      <div class="mini">
-        <div class="stat">
-          <div class="k">Tramos de foco completados</div>
-          <div class="v"><span id="tramos">0</span></div>
-        </div>
-        <div class="stat">
-          <div class="k">Recompensas (cada 4 tramos)</div>
-          <div class="v"><span id="recompensas">0</span></div>
-        </div>
-      </div>
-
-      <div class="divider"></div>
-      <div class="hint">
-        ✅ Al terminar FOCO suena un pitido y te ofrece: <b>Descansar</b> o <b>Seguir</b>.<br/>
-        ✅ El tiempo es real (sin segundos acelerados).<br/>
-        ✅ Los cambios de minutos se aplican al <b>siguiente bloque</b> (para no “romper” un bloque a mitad).
-      </div>
-    </div>
-
-    <!-- HORARIO -->
-    <div class="card">
-      <h2 class="scheduleHead">
-        <span>📚 Horario semanal (editable)</span>
-        <button class="small" id="useNowBtn" title="Usar el bloque seleccionado ahora">Usar ahora</button>
-      </h2>
-
-      <div class="hint">
-        Cada día tiene 6 bloques. Puedes poner asignaturas o tareas (“Arenero”, “Habitación”) para hacer en descansos.
-      </div>
-
-      <div class="daysTabs" id="daysTabs"></div>
-
-      <div class="taskList" id="taskList"></div>
-
-      <div class="divider"></div>
-
-      <div class="row2">
-        <div>
-          <label>Bloque actual (1–6)</label>
-          <select id="blockSelect"></select>
-        </div>
-        <div>
-          <label>Modo Cofrade</label>
-          <select id="cofradeMode">
-            <option value="on">Activado</option>
-            <option value="off">Desactivado</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="hint" style="margin-top:10px">
-        Si el horario casi siempre es el mismo, lo dejas listo una vez y ya está. Se guarda en el iPad/ordenador.
-      </div>
-    </div>
-  </div>
-
-  <!-- RECOMPENSAS -->
-  <div class="card" style="margin-top:14px">
-    <h2>🃏 Recompensas sorpresa (estampitas)</h2>
-    <div class="hint">
-      Cada 4 tramos de FOCO se desbloquea una “Holy card” sorpresa (hermandad). Se guardan automáticamente.
-    </div>
-
-    <div class="rewardGrid" id="rewardGrid"></div>
-  </div>
+Enlace Spotify:
+<input id="spotifyUrl" placeholder="pega tu playlist">
 
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <div>
-    <div class="t" id="toastTitle">—</div>
-    <div class="m" id="toastMsg">—</div>
-  </div>
-  <div class="x" id="toastClose">Cerrar</div>
+<div class="card">
+Tramos: <span id="tramos">0</span><br>
+Faltan para Domingo de Ramos: <span id="ramosLeft">0</span> días
 </div>
+
+<div class="card">
+<div id="prompt" style="display:none">
+¿Descansar o seguir?
+<br>
+<button id="btnBreak">Descansar</button>
+<button id="btnContinue">Seguir</button>
+</div>
+</div>
+
+<div class="card">
+Recompensas:
+<div id="recompensas"></div>
+</div>
+
+</div>
+
+<div id="toast" class="toast"></div>
 
 <script>
-(() => {
-  // ========= Config =========
-  const RAMOS_DATE = new Date("2026-03-29T00:00:00"); // Domingo de Ramos 2026
-  const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
-  const DAYS_COFRADE = ["Lunes Santo", "Martes Santo", "Miércoles Santo", "Jueves Santo", "Viernes Santo"];
-  const MAX_BLOCKS = 6;
-
-  // Lista (base) de hermandades de Sevilla (Domingo de Ramos → Domingo de Resurrección).
-  // Nota: Esto es una selección útil para recompensas (no afecta al timer). Puedes ampliarla cuando quieras.
-  // (La lista completa exacta depende del año y el Consejo; aquí la usamos como “colección”).
-  const HERMANDADES = [
-    // Domingo de Ramos
-    "La Borriquita","Jesús Despojado","La Paz","La Hiniesta","La Estrella","San Roque","La Amargura","El Amor",
-    // Lunes Santo
-    "San Pablo","Redención","Santa Genoveva","Santa Marta","San Gonzalo","Vera+Cruz","Las Penas","El Museo",
-    // Martes Santo
-    "San Esteban","Cigarreras","San Benito","Dulce Nombre","Los Javieres","Los Estudiantes","Santa Cruz","El Cerro","La Candelaria",
-    // Miércoles Santo
-    "El Carmen","La Sed","San Bernardo","El Buen Fin","La Lanzada","La Sagrada Cena","Cristo de Burgos","Las Siete Palabras",
-    // Jueves Santo (y Madrugá como colección)
-    "Los Negritos","La Exaltación","Las Cigarreras (Virgen)","Montesión","Quinta Angustia","El Valle",
-    "La Macarena","El Gran Poder","El Silencio","La Esperanza de Triana","Los Gitanos","El Calvario",
-    // Viernes Santo
-    "La Carretería","Soledad de San Buenaventura","El Cachorro","La O","San Isidoro","Montserrat","La Mortaja",
-    // Sábado Santo
-    "El Sol","Los Servitas","La Trinidad","Santo Entierro",
-    // Domingo de Resurrección
-    "La Resurrección"
-  ];
-
-  // ========= LocalStorage keys =========
-  const LS = {
-    focusMin: "pc2_focusMin",
-    breakMin: "pc2_breakMin",
-    spotify: "pc2_spotify",
-    schedule: "pc2_schedule",
-    dayIdx: "pc2_dayIdx",
-    blockIdx: "pc2_blockIdx",
-    tramos: "pc2_tramos",
-    rewards: "pc2_rewards",
-    unlocked: "pc2_unlocked",
-    cofrade: "pc2_cofrade"
-  };
-
-  // ========= Elements =========
-  const $ = (id) => document.getElementById(id);
-
-  const timeEl = $("time");
-  const modeTag = $("modeTag");
-  const blockTag = $("blockTag");
-  const subjectTag = $("subjectTag");
-  const pillHermandad = $("pillHermandad");
-
-  const startBtn = $("startBtn");
-  const pauseBtn = $("pauseBtn");
-  const resetBtn = $("resetBtn");
-  const spotifyBtn = $("spotifyBtn");
-
-  const choiceButtons = $("choiceButtons");
-  const goBreakBtn = $("goBreakBtn");
-  const skipBreakBtn = $("skipBreakBtn");
-
-  const focusMinEl = $("focusMin");
-  const breakMinEl = $("breakMin");
-  const spotifyUrlEl = $("spotifyUrl");
-
-  const tramosEl = $("tramos");
-  const rewardsEl = $("recompensas");
-
-  const daysTabs = $("daysTabs");
-  const taskList = $("taskList");
-  const blockSelect = $("blockSelect");
-  const useNowBtn = $("useNowBtn");
-  const cofradeMode = $("cofradeMode");
-
-  const diasRamosEl = $("diasRamos");
-
-  const rewardGrid = $("rewardGrid");
-
-  const toast = $("toast");
-  const toastTitle = $("toastTitle");
-  const toastMsg = $("toastMsg");
-  const toastClose = $("toastClose");
-
-  // ========= State =========
-  const now = () => Date.now();
-
-  const state = {
-    mode: "focus",        // focus | break
-    running: false,
-    endTs: null,          // timestamp when current segment ends
-    remainingMs: 30 * 60 * 1000, // used when paused
-    rafId: null,
-    // when a focus ends, we show the choice panel instead of auto-switching
-    awaitingChoice: false,
-    // stats
-    tramos: 0,
-    rewards: 0,
-    // schedule selection
-    dayIdx: 0,
-    blockIdx: 0,
-    schedule: null, // { dayName: [subjects...] }
-    // rewards unlocked (array of objects)
-    unlocked: [],
-    cofrade: true
-  };
-
-  // ========= Helpers =========
-  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
-
-  function formatMs(ms){
-    ms = Math.max(0, ms);
-    const totalSec = Math.round(ms / 1000);
-    const m = Math.floor(totalSec / 60);
-    const s = totalSec % 60;
-    return String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
-  }
-
-  function toastShow(title, msg){
-    toastTitle.textContent = title;
-    toastMsg.textContent = msg;
-    toast.classList.add("show");
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => toast.classList.remove("show"), 4500);
-  }
-  toastClose.addEventListener("click", () => toast.classList.remove("show"));
-
-  // Simple internal beep (no downloads)
-  function beep(durationMs=220, freq=880){
-    try{
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      const ctx = new AudioCtx();
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = "sine";
-      o.frequency.value = freq;
-      g.gain.value = 0.12;
-      o.connect(g);
-      g.connect(ctx.destination);
-      o.start();
-      setTimeout(() => {
-        o.stop();
-        ctx.close();
-      }, durationMs);
-    }catch(e){
-      // if blocked, silently ignore
-    }
-  }
-
-  function save(){
-    localStorage.setItem(LS.focusMin, String(focusMinEl.value || 30));
-    localStorage.setItem(LS.breakMin, String(breakMinEl.value || 5));
-    localStorage.setItem(LS.spotify, spotifyUrlEl.value || "");
-    localStorage.setItem(LS.schedule, JSON.stringify(state.schedule));
-    localStorage.setItem(LS.dayIdx, String(state.dayIdx));
-    localStorage.setItem(LS.blockIdx, String(state.blockIdx));
-    localStorage.setItem(LS.tramos, String(state.tramos));
-    localStorage.setItem(LS.rewards, String(state.rewards));
-    localStorage.setItem(LS.unlocked, JSON.stringify(state.unlocked));
-    localStorage.setItem(LS.cofrade, state.cofrade ? "on" : "off");
-  }
-
-  function load(){
-    const f = parseInt(localStorage.getItem(LS.focusMin) || "30", 10);
-    const b = parseInt(localStorage.getItem(LS.breakMin) || "5", 10);
-    focusMinEl.value = clamp(isNaN(f)?30:f, 5, 180);
-    breakMinEl.value = clamp(isNaN(b)?5:b, 1, 60);
-    spotifyUrlEl.value = localStorage.getItem(LS.spotify) || "";
-
-    state.dayIdx = clamp(parseInt(localStorage.getItem(LS.dayIdx) || "0",10) || 0, 0, DAYS.length-1);
-    state.blockIdx = clamp(parseInt(localStorage.getItem(LS.blockIdx) || "0",10) || 0, 0, MAX_BLOCKS-1);
-
-    state.tramos = parseInt(localStorage.getItem(LS.tramos) || "0",10) || 0;
-    state.rewards = parseInt(localStorage.getItem(LS.rewards) || "0",10) || 0;
-
-    state.unlocked = JSON.parse(localStorage.getItem(LS.unlocked) || "[]") || [];
-
-    const cof = localStorage.getItem(LS.cofrade) || "on";
-    state.cofrade = (cof !== "off");
-    cofradeMode.value = state.cofrade ? "on" : "off";
-
-    const schedRaw = localStorage.getItem(LS.schedule);
-    if(schedRaw){
-      try{
-        state.schedule = JSON.parse(schedRaw);
-      }catch(e){ state.schedule = null; }
-    }
-    if(!state.schedule){
-      // default schedule for Ignacio (editable)
-      state.schedule = {
-        "Lunes": ["Matemáticas","Lengua","Biología y Geología","Inglés","Geografía e Historia","Física y Química"],
-        "Martes": ["Matemáticas","Lengua","Geografía e Historia","Inglés","Física y Química","Biología y Geología"],
-        "Miércoles": ["Lengua","Matemáticas","Biología y Geología","Geografía e Historia","Inglés","Física y Química"],
-        "Jueves": ["Física y Química","Matemáticas","Lengua","Inglés","Geografía e Historia","Biología y Geología"],
-        "Viernes": ["Repaso (Matemáticas)","Repaso (Lengua)","Repaso (Ciencias)","Inglés","Arenero (descanso)","Habitación (descanso)"]
-      };
-    }
-
-    // initial segment based on focus minutes
-    state.mode = "focus";
-    state.running = false;
-    state.awaitingChoice = false;
-    state.remainingMs = parseInt(focusMinEl.value,10) * 60 * 1000;
-
-    tramosEl.textContent = String(state.tramos);
-    rewardsEl.textContent = String(state.rewards);
-  }
-
-  function getDayName(){
-    return state.cofrade ? DAYS_COFRADE[state.dayIdx] : DAYS[state.dayIdx];
-  }
-
-  function getSubject(){
-    const d = DAYS[state.dayIdx];
-    const list = state.schedule[d] || [];
-    return list[state.blockIdx] || "—";
-  }
-
-  function updateHeaderHermandad(){
-    // show "current hermandad" as the latest unlocked, or a default
-    const last = state.unlocked[state.unlocked.length - 1];
-    pillHermandad.textContent = "Hermandad: " + (last ? last.name : "—");
-  }
-
-  function updateRamosCountdown(){
-    const today = new Date();
-    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
-    const target = new Date(RAMOS_DATE.getFullYear(), RAMOS_DATE.getMonth(), RAMOS_DATE.getDate()).getTime();
-    const diffDays = Math.ceil((target - start) / (24*60*60*1000));
-    diasRamosEl.textContent = String(diffDays);
-  }
-
-  function renderScheduleUI(){
-    // tabs
-    daysTabs.innerHTML = "";
-    DAYS.forEach((d, i) => {
-      const el = document.createElement("div");
-      el.className = "tab" + (i===state.dayIdx ? " active" : "");
-      el.textContent = state.cofrade ? DAYS_COFRADE[i] : d;
-      el.addEventListener("click", () => {
-        state.dayIdx = i;
-        save();
-        renderScheduleUI();
-        renderMeta();
-      });
-      daysTabs.appendChild(el);
-    });
-
-    // block select
-    blockSelect.innerHTML = "";
-    for(let i=0;i<MAX_BLOCKS;i++){
-      const op = document.createElement("option");
-      op.value = String(i);
-      op.textContent = `Bloque ${i+1}`;
-      blockSelect.appendChild(op);
-    }
-    blockSelect.value = String(state.blockIdx);
-    blockSelect.addEventListener("change", () => {
-      state.blockIdx = clamp(parseInt(blockSelect.value,10)||0,0,MAX_BLOCKS-1);
-      save();
-      renderMeta();
-    });
-
-    // task list for day
-    const d = DAYS[state.dayIdx];
-    const arr = state.schedule[d] || [];
-    while(arr.length < MAX_BLOCKS) arr.push("");
-    state.schedule[d] = arr;
-
-    taskList.innerHTML = "";
-    for(let i=0;i<MAX_BLOCKS;i++){
-      const row = document.createElement("div");
-      row.className = "taskItem";
-      const n = document.createElement("div");
-      n.className = "n";
-      n.textContent = String(i+1);
-      const inp = document.createElement("input");
-      inp.value = arr[i] || "";
-      inp.placeholder = "Asignatura o tarea...";
-      inp.addEventListener("input", () => {
-        arr[i] = inp.value;
-        state.schedule[d] = arr;
-        save();
-        renderMeta();
-      });
-      row.appendChild(n);
-      row.appendChild(inp);
-      taskList.appendChild(row);
-    }
-  }
-
-  function renderRewards(){
-    rewardGrid.innerHTML = "";
-    const total = Math.max(6, state.unlocked.length + 2); // show at least some slots
-    for(let i=0;i<total;i++){
-      const unlocked = state.unlocked[i];
-      const card = document.createElement("div");
-      card.className = "holy" + (unlocked ? "" : " locked");
-
-      const top = document.createElement("div");
-      top.className = "top";
-
-      const badge = document.createElement("div");
-      badge.className = "badge";
-      badge.textContent = unlocked ? `🃏 Recompensa #${i+1}` : `🔒 Bloqueada #${i+1}`;
-
-      const mini = document.createElement("div");
-      mini.className = "badge";
-      mini.textContent = unlocked ? "Cofrade" : "…";
-
-      top.appendChild(badge);
-      top.appendChild(mini);
-
-      const name = document.createElement("div");
-      name.className = "name";
-      name.textContent = unlocked ? unlocked.name : "Sorpresa";
-
-      const desc = document.createElement("div");
-      desc.className = "miniText";
-      desc.textContent = unlocked
-        ? `Desbloqueada el ${unlocked.when}`
-        : "Completa 4 tramos de foco para desbloquear una estampita.";
-
-      card.appendChild(top);
-      card.appendChild(name);
-      card.appendChild(desc);
-
-      rewardGrid.appendChild(card);
-    }
-    updateHeaderHermandad();
-  }
-
-  function renderMeta(){
-    const dayName = getDayName();
-    const subject = getSubject();
-    blockTag.textContent = `Día: ${dayName}`;
-    subjectTag.textContent = `Asignatura: ${subject}`;
-  }
-
-  function setMode(mode){
-    state.mode = mode;
-    const tag = $("modeTag");
-    if(mode === "focus"){
-      tag.textContent = "FOCO";
-      tag.classList.add("focus");
-      tag.classList.remove("break");
-    }else{
-      tag.textContent = "DESCANSO";
-      tag.classList.remove("focus");
-      tag.classList.add("break");
-    }
-    renderMeta();
-  }
-
-  function setRemainingFromInputsForNextSegment(){
-    const f = clamp(parseInt(focusMinEl.value || "30",10), 5, 180);
-    const b = clamp(parseInt(breakMinEl.value || "5",10), 1, 60);
-    if(state.mode === "focus"){
-      state.remainingMs = f * 60 * 1000;
-    }else{
-      state.remainingMs = b * 60 * 1000;
-    }
-  }
-
-  function updateTimeDisplay(ms){
-    timeEl.textContent = formatMs(ms);
-  }
-
-  function tick(){
-    if(!state.running) return;
-    const left = Math.max(0, state.endTs - now());
-    updateTimeDisplay(left);
-
-    if(left <= 0){
-      state.running = false;
-      cancelAnimationFrame(state.rafId);
-      state.rafId = null;
-      onSegmentFinished();
-      return;
-    }
-    state.rafId = requestAnimationFrame(tick);
-  }
-
-  function start(){
-    if(state.awaitingChoice){
-      // if the user is in "choice" state, ignore "start"
-      return;
-    }
-    if(state.running) return;
-
-    // set end timestamp based on remainingMs (paused) OR next segment default
-    state.endTs = now() + state.remainingMs;
-    state.running = true;
-
-    // audio in Safari/iOS must be initiated by user gesture; start is a gesture so ok
-    state.rafId = requestAnimationFrame(tick);
-  }
-
-  function pause(){
-    if(!state.running) return;
-    const left = Math.max(0, state.endTs - now());
-    state.remainingMs = left;
-    state.running = false;
-    cancelAnimationFrame(state.rafId);
-    state.rafId = null;
-    updateTimeDisplay(state.remainingMs);
-  }
-
-  function reset(){
-    state.running = false;
-    state.awaitingChoice = false;
-    choiceButtons.style.display = "none";
-    $("mainButtons").style.display = "flex";
-    cancelAnimationFrame(state.rafId);
-    state.rafId = null;
-    setMode("focus");
-    setRemainingFromInputsForNextSegment();
-    updateTimeDisplay(state.remainingMs);
-  }
-
-  function openSpotify(){
-    const url = (spotifyUrlEl.value || "").trim();
-    if(!url){
-      toastShow("Spotify", "Pega un enlace de Spotify en el campo para guardarlo.");
-      return;
-    }
-    save();
-    window.open(url, "_blank");
-  }
-
-  function onSegmentFinished(){
-    // When focus ends: beep, count tramo, show choice (rest or continue)
-    if(state.mode === "focus"){
-      beep(250, 1046); // pitido agudo
-      state.tramos += 1;
-      tramosEl.textContent = String(state.tramos);
-
-      // reward each 4 tramos
-      if(state.tramos % 4 === 0){
-        state.rewards += 1;
-        rewardsEl.textContent = String(state.rewards);
-        unlockReward();
-      }
-
-      // show choice
-      state.awaitingChoice = true;
-      $("mainButtons").style.display = "none";
-      choiceButtons.style.display = "flex";
-      updateTimeDisplay(0);
-      toastShow("Fin de foco", "¿Descansas 5 min o sigues con otro bloque?");
-      save();
-      return;
-    }
-
-    // If break ends: beep and auto go to next focus
-    if(state.mode === "break"){
-      beep(200, 784);
-      // after break ends, move to next focus and auto-start
-      state.mode = "focus";
-      setMode("focus");
-      state.awaitingChoice = false;
-      choiceButtons.style.display = "none";
-      $("mainButtons").style.display = "flex";
-
-      // Move to next block (wrap)
-      nextBlock();
-
-      state.remainingMs = clamp(parseInt(focusMinEl.value||"30",10),5,180) * 60 * 1000;
-      updateTimeDisplay(state.remainingMs);
-      save();
-      start();
-      return;
-    }
-  }
-
-  function nextBlock(){
-    state.blockIdx += 1;
-    if(state.blockIdx >= MAX_BLOCKS){
-      state.blockIdx = 0;
-      // next day
-      state.dayIdx += 1;
-      if(state.dayIdx >= DAYS.length) state.dayIdx = 0;
-    }
-    blockSelect.value = String(state.blockIdx);
-    save();
-    renderScheduleUI();
-    renderMeta();
-  }
-
-  function unlockReward(){
-    // pick a hermandad not already unlocked
-    const used = new Set(state.unlocked.map(x => x.name));
-    const pool = HERMANDADES.filter(h => !used.has(h));
-    const pick = (pool.length ? pool : HERMANDADES)[Math.floor(Math.random() * (pool.length ? pool.length : HERMANDADES.length))];
-
-    const d = new Date();
-    const when = `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
-
-    state.unlocked.push({ name: pick, when });
-    toastShow("🃏 Recompensa desbloqueada", `¡Estampita nueva!: ${pick}`);
-    renderRewards();
-    save();
-  }
-
-  // ========= Events =========
-  startBtn.addEventListener("click", start);
-  pauseBtn.addEventListener("click", () => {
-    if(state.awaitingChoice) return;
-    pause();
-  });
-  resetBtn.addEventListener("click", reset);
-  spotifyBtn.addEventListener("click", openSpotify);
-
-  // choice buttons after focus
-  goBreakBtn.addEventListener("click", () => {
-    // go to break now
-    state.awaitingChoice = false;
-    choiceButtons.style.display = "none";
-    $("mainButtons").style.display = "flex";
-    setMode("break");
-    state.remainingMs = clamp(parseInt(breakMinEl.value||"5",10),1,60) * 60 * 1000;
-    updateTimeDisplay(state.remainingMs);
-    save();
-    start();
-  });
-
-  skipBreakBtn.addEventListener("click", () => {
-    // skip break, continue focus: move to next block and start immediately
-    state.awaitingChoice = false;
-    choiceButtons.style.display = "none";
-    $("mainButtons").style.display = "flex";
-    setMode("focus");
-    nextBlock();
-    state.remainingMs = clamp(parseInt(focusMinEl.value||"30",10),5,180) * 60 * 1000;
-    updateTimeDisplay(state.remainingMs);
-    save();
-    start();
-  });
-
-  // Apply changes to inputs only for next segment (not mid-run)
-  focusMinEl.addEventListener("input", () => {
-    const v = clamp(parseInt(focusMinEl.value||"30",10), 5, 180);
-    focusMinEl.value = v;
-    save();
-    if(!state.running && state.mode==="focus" && !state.awaitingChoice){
-      state.remainingMs = v * 60 * 1000;
-      updateTimeDisplay(state.remainingMs);
-    }
-  });
-
-  breakMinEl.addEventListener("input", () => {
-    const v = clamp(parseInt(breakMinEl.value||"5",10), 1, 60);
-    breakMinEl.value = v;
-    save();
-    if(!state.running && state.mode==="break" && !state.awaitingChoice){
-      state.remainingMs = v * 60 * 1000;
-      updateTimeDisplay(state.remainingMs);
-    }
-  });
-
-  spotifyUrlEl.addEventListener("input", save);
-
-  useNowBtn.addEventListener("click", () => {
-    // set subject for current block (doesn't start timer)
-    toastShow("Horario", "Bloque seleccionado listo. Pulsa Empezar cuando quieras.");
-    renderMeta();
-  });
-
-  cofradeMode.addEventListener("change", () => {
-    state.cofrade = (cofradeMode.value === "on");
-    save();
-    renderScheduleUI();
-    renderMeta();
-  });
-
-  // ========= Init =========
-  function init(){
-    load();
-    renderScheduleUI();
-    renderRewards();
-    renderMeta();
-    updateRamosCountdown();
-    setMode("focus");
-    updateTimeDisplay(state.remainingMs);
-
-    // update countdown daily-ish (every hour)
-    setInterval(updateRamosCountdown, 60*60*1000);
-
-    // slight hint
-    if(!(localStorage.getItem("pc2_seen"))){
-      localStorage.setItem("pc2_seen","1");
-      toastShow("Listo", "Pega tu Spotify una vez, ajusta el horario, y a estudiar. 🔥");
-    }
-  }
-
-  init();
-})();
+const $=(id)=>document.getElementById(id)
+
+const LS={
+focusMin:"pc2_focusMin",
+breakMin:"pc2_breakMin",
+spotify:"pc2_spotify",
+tramos:"pc2_tramos",
+herms:"pc2_herms"
+}
+
+const RAMOS_DATE=new Date("2026-03-29")
+
+const hermandades=[
+"Macarena","Triana","Gran Poder","San Benito","La Estrella","Los Gitanos",
+"El Cerro","San Bernardo","La Sed","San Gonzalo","Redención","San Pablo"
+]
+
+let state={
+mode:"focus",
+running:false,
+durationMs:30*60*1000,
+endTs:null,
+rafId:null
+}
+
+let audioCtx=null
+
+function armAudio(){
+if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()
+if(audioCtx.state==="suspended")audioCtx.resume()
+}
+
+function beep(){
+try{
+if(!audioCtx)return
+const now=audioCtx.currentTime
+const o=audioCtx.createOscillator()
+const g=audioCtx.createGain()
+o.frequency.value=880
+g.gain.setValueAtTime(0.001,now)
+g.gain.exponentialRampToValueAtTime(0.15,now+0.02)
+g.gain.exponentialRampToValueAtTime(0.001,now+0.3)
+o.connect(g);g.connect(audioCtx.destination)
+o.start(now)
+o.stop(now+0.3)
+}catch(e){}
+}
+
+function fmt(ms){
+ms=Math.max(0,ms)
+const t=Math.floor(ms/1000)
+return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")
+}
+
+function daysToRamos(){
+const diff=RAMOS_DATE-new Date()
+return Math.ceil(diff/(24*60*60*1000))
+}
+
+function load(){
+$("focusMin").value=localStorage.getItem(LS.focusMin)||30
+$("breakMin").value=localStorage.getItem(LS.breakMin)||5
+$("spotifyUrl").value=localStorage.getItem(LS.spotify)||""
+$("tramos").textContent=localStorage.getItem(LS.tramos)||0
+$("ramosLeft").textContent=daysToRamos()
+}
+
+function save(){
+localStorage.setItem(LS.focusMin,$("focusMin").value)
+localStorage.setItem(LS.breakMin,$("breakMin").value)
+localStorage.setItem(LS.spotify,$("spotifyUrl").value)
+}
+
+function start(){
+armAudio()
+save()
+
+const min=state.mode==="focus"?$("focusMin").value:$("breakMin").value
+state.durationMs=min*60*1000
+state.endTs=performance.now()+state.durationMs
+state.running=true
+tick()
+}
+
+function pause(){
+state.running=false
+cancelAnimationFrame(state.rafId)
+}
+
+function reset(){
+pause()
+$("time").textContent=fmt(state.durationMs)
+}
+
+function tick(){
+if(!state.running)return
+const remaining=state.endTs-performance.now()
+$("time").textContent=fmt(remaining)
+if(remaining<=0){finish();return}
+state.rafId=requestAnimationFrame(tick)
+}
+
+function finish(){
+state.running=false
+beep()
+
+if(state.mode==="focus"){
+let tr=parseInt(localStorage.getItem(LS.tramos)||0)+1
+localStorage.setItem(LS.tramos,tr)
+$("tramos").textContent=tr
+$("prompt").style.display="block"
+}else{
+state.mode="focus"
+}
+}
+
+function breakStart(){
+state.mode="break"
+$("modeTag").className="tag tagBreak"
+$("modeTag").textContent="DESCANSO"
+$("prompt").style.display="none"
+start()
+}
+
+function continueStart(){
+state.mode="focus"
+$("modeTag").className="tag tagFocus"
+$("modeTag").textContent="FOCO"
+$("prompt").style.display="none"
+start()
+}
+
+$("btnStart").onclick=start
+$("btnPause").onclick=pause
+$("btnReset").onclick=reset
+$("btnBreak").onclick=breakStart
+$("btnContinue").onclick=continueStart
+$("btnSpotify").onclick=()=>window.open($("spotifyUrl").value)
+
+load()
 </script>
+
 </body>
 </html>
