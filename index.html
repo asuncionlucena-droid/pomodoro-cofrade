@@ -4,122 +4,604 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Pomodoro Cofrade</title>
-
 <style>
-body{
-margin:0;
-background:#000;
-color:#fff;
-font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto;
-}
-.wrap{max-width:1000px;margin:auto;padding:25px;}
-.card{background:#0b0b0b;border:1px solid #222;border-radius:18px;padding:20px;margin-bottom:20px;}
-.time{font-size:70px;text-align:center;margin:20px 0;}
-button{background:#111;color:#fff;border:1px solid #444;padding:12px;border-radius:12px;margin:6px;cursor:pointer;}
-input{background:#000;border:1px solid #333;color:#fff;padding:8px;border-radius:8px;width:100%;}
-.tag{padding:6px 12px;border:1px solid #444;border-radius:999px;display:inline-block;margin-top:10px;}
+  :root{
+    --bg:#000;
+    --card:#0b0b0b;
+    --border:#222;
+    --text:#fff;
+    --muted:rgba(255,255,255,.75);
+    --btn:#111;
+    --btnBorder:#444;
+    --input:#000;
+    --inputBorder:#333;
+    --pill:#111;
+  }
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;}
+  .wrap{max-width:1100px;margin:auto;padding:22px;}
+  .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;}
+  @media(max-width:900px){.grid{grid-template-columns:1fr;}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;}
+  h1{margin:0 0 6px 0;font-size:22px;}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 12px 0;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .time{font-size:72px;text-align:center;margin:14px 0 12px;font-variant-numeric:tabular-nums;}
+  .pill{padding:8px 12px;border:1px solid var(--btnBorder);border-radius:999px;background:var(--pill);font-size:13px;color:var(--muted)}
+  button{
+    background:var(--btn);color:var(--text);border:1px solid var(--btnBorder);
+    padding:11px 14px;border-radius:12px;cursor:pointer;font-weight:600;
+  }
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .miniBtn{padding:9px 12px;font-weight:600}
+  input, select, textarea{
+    background:var(--input);border:1px solid var(--inputBorder);color:var(--text);
+    padding:10px;border-radius:10px;width:100%;
+  }
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:6px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  @media(max-width:520px){.two,.three{grid-template-columns:1fr;}}
+  .sep{height:1px;background:var(--border);margin:14px 0;}
+  .kpi{display:flex;gap:10px;flex-wrap:wrap}
+  .kpi .pill strong{color:#fff}
+  .warn{color:#ffd17a}
+  .ok{color:#9effc2}
+  .list{margin:8px 0 0 0;padding:0 0 0 18px;color:var(--muted);font-size:13px}
+  .small{font-size:12px;color:var(--muted)}
+  .modalBg{
+    position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:18px;
+  }
+  .modal{
+    max-width:520px;width:100%;background:#0b0b0b;border:1px solid #333;border-radius:16px;padding:16px;
+  }
+  .modal h3{margin:0 0 6px 0}
+  .modal p{margin:0 0 12px 0;color:var(--muted)}
 </style>
 </head>
-
 <body>
 <div class="wrap">
+  <div class="grid">
+    <div class="card">
+      <h1>Pomodoro Cofrade</h1>
+      <p class="sub">Foco + descanso con hermandades. Spotify y horario quedan guardados en este dispositivo.</p>
 
-<div class="card">
-<h2>Pomodoro Cofrade</h2>
+      <div class="row">
+        <span class="pill">Modo: <strong id="modeLabel">Foco</strong></span>
+        <span class="pill">Hermandad: <strong id="hermandadActual">—</strong></span>
+        <span class="pill">Días para Domingo de Ramos: <strong id="diasRamos">—</strong></span>
+      </div>
 
-<div id="countdown"></div>
-<div>Hermandad actual: <span id="hermandadActual" class="tag"></span></div>
+      <div class="time" id="time">30:00</div>
 
-<div class="time" id="time">30:00</div>
+      <div class="row" style="justify-content:center">
+        <button id="startBtn" onclick="startTimer()">Empezar</button>
+        <button id="pauseBtn" class="miniBtn" onclick="pauseTimer()" disabled>Pausar</button>
+        <button class="miniBtn" onclick="resetTimer()">Reiniciar</button>
+        <button class="miniBtn" onclick="openSpotify()">Spotify</button>
+      </div>
 
-<button onclick="start()">Empezar</button>
-<button onclick="pause()">Pausar</button>
-<button onclick="reset()">Reiniciar</button>
-<button onclick="abrirSpotify()">Spotify</button>
+      <div class="two" style="margin-top:12px">
+        <div>
+          <label>Foco (min)</label>
+          <input id="focusMin" type="number" min="5" max="180" step="1">
+        </div>
+        <div>
+          <label>Descanso (min)</label>
+          <input id="breakMin" type="number" min="1" max="60" step="1">
+        </div>
+      </div>
 
-<div style="margin-top:15px">
-Foco (min): <input id="focusMin" type="number" value="30">
-Descanso (min): <input id="breakMin" type="number" value="5">
+      <div style="margin-top:12px">
+        <label>Enlace Spotify (playlist / álbum / tema)</label>
+        <input id="spotifyUrl" placeholder="pega aquí tu enlace de Spotify (https://open.spotify.com/...)" />
+        <div class="small" style="margin-top:6px">Se guarda automáticamente.</div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="kpi">
+        <span class="pill">Tramos completados: <strong id="tramos">0</strong></span>
+        <span class="pill">Hermandades “ganadas” (cada 4): <strong id="hermandades">0</strong></span>
+      </div>
+
+      <ul class="list">
+        <li>El temporizador es “real”: no se acelera aunque haya lag.</li>
+        <li>Si pulsas Empezar varias veces, ya NO se duplica.</li>
+        <li>Al terminar un bloque suena y aparece aviso.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0 0 10px 0;font-size:18px">Horario de estudio (modo cofrade)</h2>
+
+      <div class="two">
+        <div>
+          <label>Elige día</label>
+          <select id="daySelect"></select>
+        </div>
+        <div>
+          <label>Asignaturas (máx. 6, separadas por coma)</label>
+          <input id="subjectsInput" placeholder="Ej: Matemáticas, Inglés, FyQ, Historia..." />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button class="miniBtn" onclick="saveDayPlan()">Guardar día</button>
+        <button class="miniBtn" onclick="loadToday()">Ver hoy</button>
+      </div>
+
+      <div class="sep"></div>
+
+      <div>
+        <div class="pill">Plan del día seleccionado</div>
+        <div id="planView" style="margin-top:10px;color:var(--muted);font-size:14px">—</div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="three">
+        <div>
+          <label>Domingo de Ramos (fecha)</label>
+          <input id="ramosDate" type="date">
+          <div class="small" style="margin-top:6px">Pon la fecha de este año. Se guarda.</div>
+        </div>
+        <div>
+          <label>Auto-cambiar (Foco→Descanso→Foco)</label>
+          <select id="autoSwitch">
+            <option value="1">Sí</option>
+            <option value="0">No (me avisa y yo inicio)</option>
+          </select>
+          <div class="small" style="margin-top:6px">Recomendado si tu hijo se distrae.</div>
+        </div>
+        <div>
+          <label>Sonido (interno)</label>
+          <select id="soundType">
+            <option value="beep">Beep</option>
+            <option value="double">Doble toque</option>
+          </select>
+          <div class="small" style="margin-top:6px">Sin descargas.</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button class="miniBtn" onclick="saveSettings()">Guardar ajustes</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div style="margin-top:15px">
-Enlace Spotify:
-<input id="spotifyUrl" placeholder="pega tu playlist aquí">
-</div>
-
-<div style="margin-top:20px">
-Tramos: <span id="tramos">0</span><br>
-Hermandades: <span id="hermandades">0</span>
-</div>
-
-</div>
-
+<!-- Modal aviso fin de bloque -->
+<div class="modalBg" id="modalBg">
+  <div class="modal">
+    <h3 id="modalTitle">Fin de bloque</h3>
+    <p id="modalText">—</p>
+    <div class="row" style="justify-content:flex-end">
+      <button class="miniBtn" onclick="closeModal()">OK</button>
+      <button id="modalStartBtn" class="miniBtn" onclick="manualContinue()">Iniciar siguiente</button>
+    </div>
+  </div>
 </div>
 
 <script>
-
-let mode="focus";
-let timer=null;
-let remaining=1800;
-let tramos=0;
-
-const hermandades=[
-"La Borriquita","Jesús Despojado","La Paz","La Cena","San Roque","La Hiniesta","El Amor",
-"San Pablo","La Redención","Santa Genoveva","Santa Marta","San Gonzalo","Vera-Cruz","Las Penas","Las Aguas","El Museo",
-"El Cerro","San Benito","Dulce Nombre","La Candelaria","San Esteban","Los Javieres","Los Estudiantes",
-"La Sed","San Bernardo","El Buen Fin","La Lanzada","El Baratillo","Las Siete Palabras","Cristo de Burgos",
-"Los Negritos","La Exaltación","Las Cigarreras","Montesión","La Quinta Angustia","El Valle","Pasión",
-"El Silencio","Gran Poder","Macarena","Calvario","Esperanza de Triana","Los Gitanos",
-"La Carretería","Soledad San Buenaventura","El Cachorro","La O","San Isidoro","Montserrat","La Mortaja",
-"El Sol","Servitas","La Trinidad","Santo Entierro","Soledad San Lorenzo",
-"La Resurrección"
+/* ------------------ Datos hermandades (lista “premios” cíclica) ------------------ */
+const hermandades = [
+  "La Borriquita","Jesús Despojado","La Paz","La Cena","San Roque","La Hiniesta","El Amor",
+  "San Pablo","La Redención","Santa Genoveva","Santa Marta","San Gonzalo","Vera-Cruz","Las Penas","Las Aguas","El Museo",
+  "El Cerro","San Benito","Dulce Nombre","La Candelaria","San Esteban","Los Javieres","Los Estudiantes",
+  "La Sed","San Bernardo","El Buen Fin","La Lanzada","El Baratillo","Las Siete Palabras","Cristo de Burgos",
+  "Los Negritos","La Exaltación","Las Cigarreras","Montesión","La Quinta Angustia","El Valle","Pasión",
+  "El Silencio","Gran Poder","Macarena","Calvario","Esperanza de Triana","Los Gitanos",
+  "La Carretería","Soledad San Buenaventura","El Cachorro","La O","San Isidoro","Montserrat","La Mortaja",
+  "El Sol","Servitas","La Trinidad","Santo Entierro","Soledad San Lorenzo",
+  "La Resurrección"
 ];
 
-function format(s){let m=Math.floor(s/60);let sec=s%60;return m+":"+sec.toString().padStart(2,"0");}
+/* ------------------ Modo cofrade días ------------------ */
+const days = [
+  "Lunes Santo","Martes Santo","Miércoles Santo","Jueves Santo","Madrugá","Viernes Santo","Sábado Santo","Domingo de Resurrección"
+];
 
-function sonido(){
-const ctx=new AudioContext();
-const osc=ctx.createOscillator();
-osc.frequency.value=500;
-osc.connect(ctx.destination);
-osc.start();
-setTimeout(()=>osc.stop(),200);
+/* ------------------ Estado ------------------ */
+const LS = {
+  focusMin: "pc_focusMin",
+  breakMin: "pc_breakMin",
+  spotify:  "pc_spotify",
+  plan:     "pc_plan",
+  tramos:   "pc_tramos",
+  mode:     "pc_mode",
+  ramos:    "pc_ramosDate",
+  auto:     "pc_autoSwitch",
+  sound:    "pc_soundType"
+};
+
+let state = {
+  mode: "focus",          // focus | break
+  running: false,
+  endTs: null,            // timestamp (ms) when current block ends
+  remainingMs: 30*60*1000,
+  rafId: null,
+  tramos: 0,
+  audioCtx: null,
+  pendingNext: null       // for manual continue
+};
+
+/* ------------------ Helpers ------------------ */
+function clamp(n, min, max){ return Math.min(Math.max(n, min), max); }
+function pad2(n){ return String(n).padStart(2,"0"); }
+function fmt(ms){
+  ms = Math.max(0, ms);
+  const totalSec = Math.ceil(ms/1000); // ceil para que no “salte” antes de tiempo
+  const m = Math.floor(totalSec/60);
+  const s = totalSec%60;
+  return `${m}:${pad2(s)}`;
+}
+function getFocusMs(){
+  const v = clamp(parseInt(document.getElementById("focusMin").value||"30",10),5,180);
+  return v*60*1000;
+}
+function getBreakMs(){
+  const v = clamp(parseInt(document.getElementById("breakMin").value||"5",10),1,60);
+  return v*60*1000;
+}
+function getAutoSwitch(){
+  return document.getElementById("autoSwitch").value === "1";
+}
+function currentHermandad(){
+  const idx = Math.floor(state.tramos/4) % hermandades.length;
+  return hermandades[idx];
+}
+function updateKPIs(){
+  document.getElementById("tramos").innerText = String(state.tramos);
+  document.getElementById("hermandades").innerText = String(Math.floor(state.tramos/4));
+  document.getElementById("hermandadActual").innerText = currentHermandad();
+  document.getElementById("modeLabel").innerText = state.mode === "focus" ? "Foco" : "Descanso";
+}
+function saveLocal(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+function loadLocal(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    if(raw === null || raw === undefined) return fallback;
+    return JSON.parse(raw);
+  }catch(e){ return fallback; }
 }
 
-function start(){
-let focus=document.getElementById("focusMin").value*60;
-let breakt=document.getElementById("breakMin").value*60;
-if(mode=="focus")remaining=focus;
-timer=setInterval(()=>{
-remaining--;
-if(remaining<=0){
-sonido();
-if(mode=="focus"){tramos++;mode="break";remaining=breakt;}
-else{mode="focus";remaining=focus;}
+/* ------------------ Sonido interno ------------------ */
+function ensureAudio(){
+  if(!state.audioCtx){
+    state.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  // algunos navegadores requieren resume tras gesto
+  if(state.audioCtx.state === "suspended"){
+    state.audioCtx.resume().catch(()=>{});
+  }
 }
-render();
-},1000);
+function playBeep(pattern="beep"){
+  ensureAudio();
+  const ctx = state.audioCtx;
+  const now = ctx.currentTime;
+
+  function tone(t, dur, freq){
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type="sine";
+    o.frequency.value = freq;
+    g.gain.value = 0.0001;
+    o.connect(g); g.connect(ctx.destination);
+    o.start(t);
+    // envelope suave
+    g.gain.exponentialRampToValueAtTime(0.2, t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+    o.stop(t+dur+0.02);
+  }
+
+  if(pattern==="double"){
+    tone(now, 0.18, 660);
+    tone(now+0.25, 0.18, 660);
+  }else{
+    tone(now, 0.22, 520);
+  }
 }
 
-function pause(){clearInterval(timer);}
-
-function reset(){pause();remaining=1800;render();}
-
-function abrirSpotify(){
-let url=document.getElementById("spotifyUrl").value;
-window.open(url);
+/* ------------------ Modal fin de bloque ------------------ */
+function openModal(title, text, showStartBtn){
+  document.getElementById("modalTitle").innerText = title;
+  document.getElementById("modalText").innerText = text;
+  document.getElementById("modalBg").style.display = "flex";
+  document.getElementById("modalStartBtn").style.display = showStartBtn ? "inline-block" : "none";
+}
+function closeModal(){
+  document.getElementById("modalBg").style.display = "none";
+}
+function manualContinue(){
+  closeModal();
+  if(state.pendingNext){
+    // arrancamos el siguiente bloque
+    state.mode = state.pendingNext;
+    state.pendingNext = null;
+    startTimer(true); // true = continuar sin reset manual raro
+  }
 }
 
-function render(){
-document.getElementById("time").innerText=format(remaining);
-document.getElementById("tramos").innerText=tramos;
-document.getElementById("hermandades").innerText=Math.floor(tramos/4);
-document.getElementById("hermandadActual").innerText=hermandades[Math.floor(tramos/4)%hermandades.length];
+/* ------------------ Motor del temporizador (real time) ------------------ */
+function tick(){
+  if(!state.running) return;
+
+  const now = performance.now();
+  state.remainingMs = state.endTs - now;
+
+  if(state.remainingMs <= 0){
+    // fin de bloque
+    state.remainingMs = 0;
+    renderTime();
+    onBlockEnd();
+    return;
+  }
+
+  renderTime();
+  state.rafId = requestAnimationFrame(tick);
 }
 
-render();
+function renderTime(){
+  document.getElementById("time").innerText = fmt(state.remainingMs);
+}
 
+function startTimer(continueMode=false){
+  ensureAudio();
+
+  if(state.running) return; // evita duplicados
+
+  // Si no es “continuar” y el usuario acaba de cambiar minutos, respetamos el modo actual
+  const focusMs = getFocusMs();
+  const breakMs = getBreakMs();
+
+  if(!continueMode){
+    // Si estaba parado, al empezar cargamos el tiempo completo del modo actual
+    state.remainingMs = (state.mode === "focus") ? focusMs : breakMs;
+  }
+
+  state.running = true;
+  document.getElementById("startBtn").disabled = true;
+  document.getElementById("pauseBtn").disabled = false;
+
+  state.endTs = performance.now() + state.remainingMs;
+  saveState();
+  state.rafId = requestAnimationFrame(tick);
+}
+
+function pauseTimer(){
+  if(!state.running) return;
+  state.running = false;
+  if(state.rafId) cancelAnimationFrame(state.rafId);
+  // recalcula remainingMs con precisión
+  state.remainingMs = Math.max(0, state.endTs - performance.now());
+
+  document.getElementById("startBtn").disabled = false;
+  document.getElementById("pauseBtn").disabled = true;
+
+  saveState();
+  renderTime();
+}
+
+function resetTimer(){
+  pauseTimer();
+  const focusMs = getFocusMs();
+  state.mode = "focus";
+  state.remainingMs = focusMs;
+  updateKPIs();
+  saveState();
+  renderTime();
+}
+
+function onBlockEnd(){
+  // parar el motor
+  state.running = false;
+  if(state.rafId) cancelAnimationFrame(state.rafId);
+  document.getElementById("startBtn").disabled = false;
+  document.getElementById("pauseBtn").disabled = true;
+
+  // sonido
+  const soundType = document.getElementById("soundType").value;
+  playBeep(soundType);
+
+  // lógica de transición
+  if(state.mode === "focus"){
+    state.tramos += 1; // tramo completado SOLO al terminar foco
+    updateKPIs();
+  }
+
+  const nextMode = (state.mode === "focus") ? "break" : "focus";
+  const auto = getAutoSwitch();
+
+  if(auto){
+    // muestra aviso breve pero continúa
+    const title = (state.mode === "focus") ? "¡Foco completado!" : "¡Descanso terminado!";
+    const text = (state.mode === "focus") ? "Vamos al descanso." : "Volvemos al foco.";
+    openModal(title, text, false);
+
+    // cambia modo y arranca en 0.6s para que dé tiempo a leer
+    state.mode = nextMode;
+    state.pendingNext = null;
+    saveState();
+    setTimeout(()=>{
+      closeModal();
+      startTimer(false);
+    }, 600);
+
+  }else{
+    // modo manual: avisa y el usuario inicia siguiente
+    const title = (state.mode === "focus") ? "¡Foco completado!" : "¡Descanso terminado!";
+    const text  = (state.mode === "focus")
+      ? "Pulsa “Iniciar siguiente” cuando estés listo para el descanso."
+      : "Pulsa “Iniciar siguiente” cuando estés listo para volver al foco.";
+
+    state.pendingNext = nextMode;
+    saveState();
+    openModal(title, text, true);
+  }
+}
+
+/* ------------------ Spotify ------------------ */
+function openSpotify(){
+  const url = (document.getElementById("spotifyUrl").value || "").trim();
+  if(!url){
+    openModal("Falta el enlace", "Pega tu enlace de Spotify y se quedará guardado.", false);
+    return;
+  }
+  // guarda
+  saveLocal(LS.spotify, url);
+  window.open(url, "_blank");
+}
+
+/* ------------------ Horario semanal ------------------ */
+function initDaySelect(){
+  const sel = document.getElementById("daySelect");
+  sel.innerHTML = "";
+  days.forEach((d,i)=>{
+    const opt = document.createElement("option");
+    opt.value = String(i);
+    opt.textContent = d;
+    sel.appendChild(opt);
+  });
+
+  sel.addEventListener("change", ()=>{
+    loadDayPlan(parseInt(sel.value,10));
+  });
+}
+
+function normalizeSubjects(text){
+  return text
+    .split(",")
+    .map(s=>s.trim())
+    .filter(Boolean)
+    .slice(0,6);
+}
+
+function getPlanObj(){
+  return loadLocal(LS.plan, {}); // { "0": ["Mate","Inglés"...], ... }
+}
+
+function saveDayPlan(){
+  const idx = parseInt(document.getElementById("daySelect").value,10);
+  const subs = normalizeSubjects(document.getElementById("subjectsInput").value || "");
+  const plan = getPlanObj();
+  plan[String(idx)] = subs;
+  saveLocal(LS.plan, plan);
+  renderPlan(idx);
+}
+
+function loadDayPlan(idx){
+  const plan = getPlanObj();
+  const subs = plan[String(idx)] || [];
+  document.getElementById("subjectsInput").value = subs.join(", ");
+  renderPlan(idx);
+}
+
+function renderPlan(idx){
+  const plan = getPlanObj();
+  const subs = plan[String(idx)] || [];
+  const dayName = days[idx] || "—";
+  const html = subs.length
+    ? `<div class="ok"><strong>${dayName}</strong></div><div style="margin-top:6px">${subs.map((s,i)=>`${i+1}. ${s}`).join("<br>")}</div>`
+    : `<div class="warn"><strong>${dayName}</strong></div><div style="margin-top:6px">Aún no hay asignaturas guardadas para este día.</div>`;
+  document.getElementById("planView").innerHTML = html;
+}
+
+function loadToday(){
+  // “hoy” en modo cofrade no existe como calendario real, así que:
+  // usamos el día seleccionado o, si quieres, el día actual (0..6) mapeado.
+  const sel = document.getElementById("daySelect");
+  const idx = parseInt(sel.value,10);
+  loadDayPlan(idx);
+}
+
+/* ------------------ Contador Domingo de Ramos ------------------ */
+function calcDiasRamos(){
+  const iso = document.getElementById("ramosDate").value; // yyyy-mm-dd
+  if(!iso){ document.getElementById("diasRamos").innerText="—"; return; }
+  const target = new Date(iso+"T00:00:00");
+  const now = new Date();
+  const ms = target.getTime() - new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+  const daysLeft = Math.round(ms / (24*60*60*1000));
+  document.getElementById("diasRamos").innerText = String(daysLeft);
+}
+
+function saveSettings(){
+  saveLocal(LS.focusMin, clamp(parseInt(document.getElementById("focusMin").value||"30",10),5,180));
+  saveLocal(LS.breakMin, clamp(parseInt(document.getElementById("breakMin").value||"5",10),1,60));
+  saveLocal(LS.auto, document.getElementById("autoSwitch").value);
+  saveLocal(LS.sound, document.getElementById("soundType").value);
+  saveLocal(LS.ramos, document.getElementById("ramosDate").value || "");
+  // recalcula tiempo si estaba parado
+  if(!state.running){
+    state.remainingMs = (state.mode==="focus") ? getFocusMs() : getBreakMs();
+    renderTime();
+  }
+  calcDiasRamos();
+  openModal("Guardado", "Ajustes guardados ✅", false);
+}
+
+/* ------------------ Guardar/recuperar estado del temporizador ------------------ */
+function saveState(){
+  saveLocal(LS.tramos, state.tramos);
+  saveLocal(LS.mode, state.mode);
+  // NO guardamos endTs porque al recargar no queremos que “se vaya solo”:
+  // guardamos remainingMs para reanudar manualmente.
+  saveLocal("pc_remainingMs", Math.max(0, state.remainingMs));
+}
+
+function loadState(){
+  state.tramos = loadLocal(LS.tramos, 0);
+  state.mode = loadLocal(LS.mode, "focus");
+  state.remainingMs = loadLocal("pc_remainingMs", getFocusMs());
+  state.running = false;
+  state.endTs = null;
+}
+
+/* ------------------ Auto-guardado Spotify (sin botón) ------------------ */
+function setupAutoSaveSpotify(){
+  const el = document.getElementById("spotifyUrl");
+  el.addEventListener("input", ()=>{
+    const v = (el.value||"").trim();
+    saveLocal(LS.spotify, v);
+  });
+}
+
+/* ------------------ Init ------------------ */
+function init(){
+  // inputs base
+  document.getElementById("focusMin").value = loadLocal(LS.focusMin, 30);
+  document.getElementById("breakMin").value = loadLocal(LS.breakMin, 5);
+  document.getElementById("spotifyUrl").value = loadLocal(LS.spotify, "");
+  document.getElementById("autoSwitch").value = loadLocal(LS.auto, "1");
+  document.getElementById("soundType").value = loadLocal(LS.sound, "beep");
+
+  const ramos = loadLocal(LS.ramos, "");
+  if(ramos) document.getElementById("ramosDate").value = ramos;
+
+  setupAutoSaveSpotify();
+
+  initDaySelect();
+  loadDayPlan(0); // por defecto Lunes Santo
+  calcDiasRamos();
+  setInterval(calcDiasRamos, 60*1000);
+
+  loadState();
+  updateKPIs();
+  renderTime();
+  renderPlan(parseInt(document.getElementById("daySelect").value,10));
+
+  // Si el usuario cambia minutos mientras está parado, actualiza la pantalla
+  document.getElementById("focusMin").addEventListener("change", ()=>{
+    if(!state.running && state.mode==="focus"){ state.remainingMs=getFocusMs(); renderTime(); saveState(); }
+    saveLocal(LS.focusMin, clamp(parseInt(document.getElementById("focusMin").value||"30",10),5,180));
+  });
+  document.getElementById("breakMin").addEventListener("change", ()=>{
+    if(!state.running && state.mode==="break"){ state.remainingMs=getBreakMs(); renderTime(); saveState(); }
+    saveLocal(LS.breakMin, clamp(parseInt(document.getElementById("breakMin").value||"5",10),1,60));
+  });
+}
+
+init();
 </script>
-
 </body>
 </html>
